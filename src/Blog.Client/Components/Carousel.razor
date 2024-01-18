@@ -1,0 +1,156 @@
+﻿<div class="container-fluid">
+    <div class="owl-banner owl-carousel">
+        @foreach (var item in activeCarouselItems)
+        {
+            <div class="item">
+                <img src="@item.ImageSrc" alt="@item.ImageAlt">
+                <div class="item-content">
+                    <div class="main-content">
+                        <div class="meta-category">
+                            <span>Fashion</span>
+                        </div>
+                        <a href="post-details.html"><h4>@item.Title</h4></a>
+                        <ul class="post-info">
+                            <li><a href="#">Admin</a></li>
+                            <li><a href="#">May 12, 2020</a></li>
+                            <li><a href="#">12 Comments</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="carousel-controls">
+            <button class="carousel-control-prev" @onclick="MoveLeft">
+                <i class="fas fa-chevron-left" style="font-size: 1.5em;"></i>
+            </button>
+            <button class="carousel-control-next" @onclick="MoveRight">
+                <i class="fas fa-chevron-right" style="font-size: 1.5em;"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private int windowSize = 3;
+    public class CarouselItem
+    {
+        public string ImageSrc { get; } = string.Empty;
+        public string ImageAlt { get; } = string.Empty;
+        public string BackgroundColor { get; } = string.Empty;
+        public string Title { get; } = string.Empty;
+        public string SubTitle { get; } = string.Empty;
+        public string Description { get; } = string.Empty;
+        public bool IsActive { get; set; }
+
+        public CarouselItem(string imageSrc, string imageAlt, string backgroundColor, string title, string subTitle, string description, bool isActive = false)
+        {
+            ImageSrc = imageSrc;
+            ImageAlt = imageAlt;
+            BackgroundColor = backgroundColor;
+            Title = title;
+            SubTitle = subTitle;
+            Description = description;
+            IsActive = isActive;
+        }
+    }
+    public List<CarouselItem> activeCarouselItems = new List<CarouselItem>();
+    public List<CarouselItem> carouselItems { get; set; } = new List<CarouselItem>()
+    {
+        new CarouselItem
+        (
+            "images/banner-item-01.jpg",
+            "Summer Collection",
+            "#f4ede5",
+            "Title1",
+            "Has just arrived!",
+            "Swimwear, Tops, Shorts, Sunglasses & much more...",
+            true
+        ),
+        new CarouselItem
+        (
+            "images/banner-item-02.jpg",
+            "Women Sportswear",
+            "#f2f3f5",
+            "Title2",
+            "Hurry up! Limited time offer.",
+            "Sneakers, Keds, Sweatshirts, Hoodies & much more..."
+        ),
+        new CarouselItem
+        (
+            "images/banner-item-03.jpg",
+            "Men Accessories",
+            "#edf1f4",
+            "Title3",
+            "Complete your look with",
+            "Hats & Caps, Sunglasses, Bags & much more..."
+        ),
+        new CarouselItem
+        (
+            "images/banner-item-04.jpg",
+            "C4",
+            "#edf1f4",
+            "Title4",
+            "Complete your look with",
+            "Hats & Caps, Sunglasses, Bags & much more..."
+        ),
+        new CarouselItem
+        (
+            "images/banner-item-05.jpg",
+            "C4",
+            "#edf1f4",
+            "Title5",
+            "Complete your look with",
+            "Hats & Caps, Sunglasses, Bags & much more..."
+        ),
+        new CarouselItem
+        (
+            "images/banner-item-06.jpg",
+            "C4",
+            "#edf1f4",
+            "Title6",
+            "Complete your look with",
+            "Hats & Caps, Sunglasses, Bags & much more..."
+        ),
+    };
+
+    private void MoveRight()
+    {
+        if (activeCarouselItems.Count > 0)
+            activeCarouselItems.RemoveAt(0);
+
+        // Add the next item from the original list after the last item in the new list
+        activeCarouselItems.Add(GetNextCarouselItem());
+
+        StateHasChanged();
+    }
+
+    private void MoveLeft()
+    {
+        if (activeCarouselItems.Count > 0)
+            activeCarouselItems.RemoveAt(activeCarouselItems.Count - 1);
+
+        // Insert a new item at the beginning of the active list
+        activeCarouselItems.Insert(0, GetPreviousCarouselItem());
+
+        StateHasChanged();
+    }
+
+    private CarouselItem GetNextCarouselItem()
+    {
+        int lastItemIndex = activeCarouselItems.Count > 0 ? carouselItems.IndexOf(activeCarouselItems.Last()) : -1;
+        int nextIndex = (lastItemIndex + 1) % carouselItems.Count;
+        return carouselItems[nextIndex];
+    }
+
+    private CarouselItem GetPreviousCarouselItem()
+    {
+        int firstItemIndex = activeCarouselItems.Count > 0 ? carouselItems.IndexOf(activeCarouselItems.First()) : carouselItems.Count;
+        int previousIndex = (firstItemIndex - 1 + carouselItems.Count) % carouselItems.Count;
+        return carouselItems[previousIndex];
+    }
+
+    protected override void OnInitialized()
+    {
+        activeCarouselItems = carouselItems.Take(3).ToList();
+    }
+}
