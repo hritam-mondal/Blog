@@ -94,6 +94,28 @@
     color: #f48840;
 }
 
+.navbar .navbar-nav .button a {
+    display: inline-block;
+    background-color: #f48840;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 20px;
+    color: #fff;
+    text-transform: uppercase;
+    transition: all .3s;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+    .navbar .navbar-nav .button a:hover {
+        background-color: #fb9857;
+    }
+
+.btn-logout {
+    margin-inline-start: 6px;
+}
+
 .navbar .navbar-toggler-icon {
     background-image: none;
 }
@@ -107,12 +129,4 @@
     position: absolute;
     right: 30px;
     top: 25px;
-}
-
-.navbar .navbar-toggler-icon:after {
-    content: '\f0c9';
-    color: #fff;
-    font-size: 18px;
-    line-height: 30px;
-    font-family: 'FontAwesome';
 }

@@ -1,0 +1,117 @@
+﻿@page "/create-post"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<!-- Banner Starts Here -->
+<div class="heading-page header-text">
+    <section class="page-heading">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="text-content">
+                        <h4>Create Post</h4>
+                        <h2>Create a new post</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+<!-- Banner Ends Here -->
+
+<div class="container mt-5">
+    <EditForm Model="@postModel" OnValidSubmit="HandleCreatePost">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <h2 class="text-center mb-4">Create a New Post</h2>
+
+                <div class="form-group">
+                    <label for="Title">Title:</label>
+                    <InputText @bind-Value="postModel.Title" class="form-control" id="Title" />
+                    <ValidationMessage For="@(() => postModel.Title)" />
+                </div>
+
+                <div class="form-group">
+                    <label for="Category">Category:</label>
+                    <!-- Assuming you have a SelectList for categories, adjust this accordingly -->
+                    <InputSelect @bind-Value="postModel.Category" class="form-control" id="Category">
+                        @foreach (var category in GetCategories())
+                        {
+                            <option value="@category">@category</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => postModel.Category)" />
+                </div>
+
+                <div class="form-group">
+                    <label for="Tags">Tags (comma-separated):</label>
+                    <InputText @bind-Value="postModel.TagsInput" class="form-control" id="Tags" />
+                    <ValidationMessage For="@(() => postModel.TagsInput)" />
+                </div>
+
+                <div class="form-group">
+                    <label for="ImageUrl">Image URL:</label>
+                    <InputText @bind-Value="postModel.ImageUrl" class="form-control" id="ImageUrl" />
+                </div>
+
+                <div class="form-group">
+                    <label for="Content">Content:</label>
+                    <textarea @bind="postModel.Content" class="form-control" id="Content"></textarea>
+                    <ValidationMessage For="@(() => postModel.Content)" />
+                </div>
+
+                <button type="submit" class="btn btn-primary float-end">Create Post</button>
+            </div>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    private PostModel postModel = new PostModel();
+    private string? errorMessage;
+
+    private async Task HandleCreatePost()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync("https://localhost:7145/api/posts", postModel);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Post creation successful
+                Console.WriteLine("Post created successfully");
+
+                // Navigate to the home page or view the newly created post
+                NavigationManager.NavigateTo("/");
+            }
+            else
+            {
+                // Post creation failed, handle errors
+                errorMessage = $"Post creation failed. Status code: {response.StatusCode}";
+                Console.WriteLine(errorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle exception (e.g., network error)
+            errorMessage = $"An error occurred: {ex.Message}";
+            Console.WriteLine(errorMessage);
+        }
+    }
+
+    // This method is for demonstration purposes; replace it with your actual category retrieval logic
+    private IEnumerable<string> GetCategories()
+    {
+        return new List<string> { "Category1", "Category2", "Category3" };
+    }
+
+    private class PostModel
+    {
+        public string? Title { get; set; }
+        public string? Category { get; set; }
+        public string? ImageUrl { get; set; }
+        public string? Content { get; set; }
+        public string? TagsInput { get; set; }
+        public List<string>? Tags { get; set; }
+    }
+}

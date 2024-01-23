@@ -1,0 +1,36 @@
+﻿a {
+    color: #f48840;
+}
+
+::deep .form-group .form-input {
+    width: 100%;
+    height: 46px;
+    border: 1px solid #eee;
+    font-size: 15px;
+    font-weight: 500;
+    color: #7a7a7a;
+    outline: none;
+    padding: 0px 15px;
+    margin-bottom: 30px;
+}
+
+::deep .validation-message {
+    color: #cd5c5c;
+}
+
+.container .button {
+    display: inline-block;
+    background-color: #f48840;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 20px;
+    text-transform: uppercase;
+    transition: all .3s;
+    border: none;
+    outline: none;
+}
+
+    .container .button:hover {
+        background-color: #fb9857;
+    }

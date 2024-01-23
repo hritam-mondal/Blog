@@ -1,4 +1,7 @@
-﻿<header>
+﻿@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<header>
     <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand" href="index.html"><h2>Blog<em>.</em></h2></a>
@@ -14,14 +17,29 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/about">About Us</a>
+                        <a class="nav-link" href="/blogs">Blogs</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/blog">Blog Entries</a>
+                        <a class="nav-link" href="/about">About Us</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/contact">Contact Us</a>
                     </li>
+                    @if (isLoggedIn)
+                    {
+                        <li class="button">
+                            <a href="/create-post">Create Post</a>
+                        </li>
+                        <li>
+                            <button class="button btn-logout" @onclick="HandleLogout">Logout</button>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="button">
+                            <a href="/login">Login</a>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>
@@ -29,5 +47,29 @@
 </header>
 
 @code {
+    private bool isLoggedIn = false;
 
+    protected override async Task OnInitializedAsync()
+    {
+        // Check if a valid token exists in local storage
+        string token = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "token");
+
+        if (!string.IsNullOrEmpty(token))
+        {
+            // Token exists, set isLoggedIn to true
+            isLoggedIn = true;
+        }
+    }
+
+    private async Task HandleLogout()
+    {
+        // Clear the token from local storage
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "token");
+
+        // Set isLoggedIn to false
+        isLoggedIn = false;
+
+        // Redirect to the desired page (e.g., home page)
+        NavigationManager.NavigateTo("/");
+    }
 }

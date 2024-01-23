@@ -1,0 +1,133 @@
+﻿@page "/register"
+@using System.ComponentModel.DataAnnotations
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@layout AuthLayout
+
+<EditForm Model="@registrationModel" OnValidSubmit="HandleRegister">
+    <DataAnnotationsValidator></DataAnnotationsValidator>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <h2 class="text-center mb-4">Create your account</h2>
+                @if (errorMessage != null)
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @errorMessage
+                    </div>
+                }
+                <div class="form-group">
+                    <ValidationMessage For="@(() => registrationModel.FirstName)" class="validation-message"></ValidationMessage>
+                    <InputText @bind-Value="registrationModel.FirstName" class="form-input" placeholder="First name" />
+                </div>
+
+                <div class="form-group">
+                    <ValidationMessage For="@(() => registrationModel.LastName)" class="validation-message"></ValidationMessage>
+                    <InputText @bind-Value="registrationModel.LastName" class="form-input" placeholder="Last name" />
+                </div>
+
+                <div class="form-group">
+                    <ValidationMessage For="@(() => registrationModel.Email)" class="validation-message"></ValidationMessage>
+                    <InputText @bind-Value="registrationModel.Email" class="form-input" placeholder="Email" />
+                </div>
+
+                <div class="form-group">
+                    <ValidationMessage For="@(() => registrationModel.Password)" class="validation-message"></ValidationMessage>
+                    <InputText @bind-Value="registrationModel.Password" class="form-input" placeholder="Password" />
+                </div>
+
+                <button type="submit" class="button float-end">Register</button>
+
+                <div class="mt-3">
+                    <p>Already have an account? <a href="/login">Login</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private RegistrationModel registrationModel = new RegistrationModel();
+    private string? errorMessage;
+
+    private async Task HandleRegister()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync("https://localhost:7145/api/register", registrationModel);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var registeResult = await response.Content.ReadFromJsonAsync<RegisterResult>();
+
+                if (registeResult != null && registeResult.Success)
+                {
+                    // Registration successful
+                    Console.WriteLine("Registration successful");
+
+                    // Navigate to the login page
+                    NavigationManager.NavigateTo("/login");
+                }
+                else
+                {
+                    // Login failed, handle errors
+                    errorMessage = registeResult?.ErrorMessage ?? "Registration failed.";
+                    Console.WriteLine(errorMessage);
+                }
+            }
+            else
+            {
+                // Registration failed, handle errors
+                errorMessage = $"Registration failed. Status code: {response.StatusCode}";
+                Console.WriteLine(errorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle exception (e.g., network error)
+            errorMessage = $"An error occurred: {ex.Message}";
+            Console.WriteLine(errorMessage);
+        }
+    }
+
+    private class RegistrationModel
+    {
+        [Required(ErrorMessage = "First Name is required.")]
+        [MaxLength(50, ErrorMessage = "First Name cannot exceed 50 characters.")]
+        public string? FirstName { get; set; }
+
+        [Required(ErrorMessage = "Last Name is required.")]
+        [MaxLength(50, ErrorMessage = "Last Name cannot exceed 50 characters.")]
+        public string? LastName { get; set; }
+
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Invalid email format.")]
+        [MaxLength(100, ErrorMessage = "Email cannot exceed 100 characters.")]
+        public string? Email { get; set; }
+
+        [Required(ErrorMessage = "Password is required.")]
+        [MinLength(8, ErrorMessage = "Password must be at least 8 characters long.")]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,}$",
+            ErrorMessage = "Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character.")]
+        public string? Password { get; set; }
+    }
+
+    public class User
+    {
+        public Guid Id { get; set; }
+        public required string FirstName { get; set; }
+        public required string LastName { get; set; }
+        public required string Email { get; set; }
+        public required string PasswordHash { get; set; }
+        public required string PasswordSalt { get; set; }
+        public string? Role { get; set; }
+        public bool? IsVerified { get; set; }
+    }
+
+    public class RegisterResult
+    {
+        public bool Success { get; set; }
+        public string? ErrorMessage { get; set; }
+        public User? RegisteredUser { get; set; }
+    }
+}
