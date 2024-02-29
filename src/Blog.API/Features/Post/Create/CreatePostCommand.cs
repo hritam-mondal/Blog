@@ -6,5 +6,4 @@ public class CreatePostCommand : IRequest<CreatePostResult>
 {
     public string? Title { get; set; }
     public string? Content { get; set; }
-    public Guid AuthorId { get; set; }
 }

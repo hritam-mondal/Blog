@@ -19,6 +19,7 @@ builder.Services.AddValidatorsFromAssembly(assembly);
 builder.Services.AddCarter();
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 builder.Services.RegisterRepositories();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddCors(options =>
 {

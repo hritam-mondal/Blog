@@ -8,15 +8,13 @@ public class Post
     public Guid Id { get; set; }
     [Required]
     public required string Title { get; set; }
-    [Required]
-    public required Category category { get; set; }
     public string? ImageUrl { get; set; }
     [Required]
     public required string Content { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     [Required]
-    public required User? Author { get; set; }
+    public required string Author { get; set; }
     public List<string>? Tags { get; set; }
     public int Views { get; set; }
 }

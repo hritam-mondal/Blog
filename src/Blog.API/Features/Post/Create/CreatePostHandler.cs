@@ -2,6 +2,7 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Blog.API.Features.Post.Create;
 
@@ -9,11 +10,13 @@ public sealed class CreatePostHandler : IRequestHandler<CreatePostCommand, Creat
 {
     private readonly IValidator<CreatePostCommand> _validator;
     private readonly ApplicationDbContext _context;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public CreatePostHandler(ApplicationDbContext context, IValidator<CreatePostCommand> validator)
+    public CreatePostHandler(ApplicationDbContext context, IValidator<CreatePostCommand> validator, IHttpContextAccessor httpContextAccessor)
     {
         _context = context;
         _validator = validator;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<CreatePostResult> Handle(CreatePostCommand request, CancellationToken cancellationToken)
@@ -22,6 +25,13 @@ public sealed class CreatePostHandler : IRequestHandler<CreatePostCommand, Creat
         {
             // Validate the command using the validator
             var validationResult = await _validator.ValidateAsync(request, cancellationToken);
+            // Retrieve the authorization token from the request headers
+            string? token = _httpContextAccessor.HttpContext!.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+            Guid authorId = Guid.Empty;
+            if (token != null)
+            {
+                authorId = Guid.Parse(GetUserIdFromToken(token)!);
+            }
             if (!validationResult.IsValid)
             {
                 // Handle validation errors (e.g., return error response)
@@ -29,7 +39,7 @@ public sealed class CreatePostHandler : IRequestHandler<CreatePostCommand, Creat
             }
 
             // Check if the author exists
-            var author = await _context.Users.FirstOrDefaultAsync(u => u.Id == request.AuthorId, cancellationToken);
+            var author = await _context.Users.FirstOrDefaultAsync(u => u.Id == authorId, cancellationToken);
             if (author == null)
             {
                 // Handle the case where the author is not found
@@ -44,7 +54,7 @@ public sealed class CreatePostHandler : IRequestHandler<CreatePostCommand, Creat
                 Content = request.Content!,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                Author = author
+                Author = $"{author.FirstName} {author.LastName}"
             };
 
             // Save the blog post to the database
@@ -75,5 +85,16 @@ public sealed class CreatePostHandler : IRequestHandler<CreatePostCommand, Creat
             Console.WriteLine($"An error occurred: {ex.Message}");
             return new CreatePostResult { Success = false, ErrorCode = "UnknownError", CreatedPost = null };
         }
+    }
+
+    private string? GetUserIdFromToken(string token)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadToken(token) as JwtSecurityToken;
+
+        // Get the "UserId" claim from the token's claims
+        var userIdClaim = jwtToken?.Claims.FirstOrDefault(claim => claim.Type == "UserId");
+
+        return userIdClaim?.Value;
     }
 }

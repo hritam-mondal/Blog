@@ -8,6 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Features\Post\Delete\**" />
+    <Compile Remove="Features\Post\View\**" />
+    <Content Remove="Features\Post\Delete\**" />
+    <Content Remove="Features\Post\View\**" />
+    <EmbeddedResource Remove="Features\Post\Delete\**" />
+    <EmbeddedResource Remove="Features\Post\View\**" />
+    <None Remove="Features\Post\Delete\**" />
+    <None Remove="Features\Post\View\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Carter" Version="8.0.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.0" />
     <PackageReference Include="Mapster" Version="7.4.0" />
@@ -25,11 +36,6 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Features\Post\Delete\" />
-    <Folder Include="Features\Post\View\" />
   </ItemGroup>
 
 </Project>

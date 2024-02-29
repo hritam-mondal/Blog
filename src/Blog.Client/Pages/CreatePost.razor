@@ -1,4 +1,6 @@
 ﻿@page "/create-post"
+@using System.Net.Http.Headers
+@inject IJSRuntime JSRuntime
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 
@@ -32,29 +34,6 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="Category">Category:</label>
-                    <!-- Assuming you have a SelectList for categories, adjust this accordingly -->
-                    <InputSelect @bind-Value="postModel.Category" class="form-control" id="Category">
-                        @foreach (var category in GetCategories())
-                        {
-                            <option value="@category">@category</option>
-                        }
-                    </InputSelect>
-                    <ValidationMessage For="@(() => postModel.Category)" />
-                </div>
-
-                <div class="form-group">
-                    <label for="Tags">Tags (comma-separated):</label>
-                    <InputText @bind-Value="postModel.TagsInput" class="form-control" id="Tags" />
-                    <ValidationMessage For="@(() => postModel.TagsInput)" />
-                </div>
-
-                <div class="form-group">
-                    <label for="ImageUrl">Image URL:</label>
-                    <InputText @bind-Value="postModel.ImageUrl" class="form-control" id="ImageUrl" />
-                </div>
-
-                <div class="form-group">
                     <label for="Content">Content:</label>
                     <textarea @bind="postModel.Content" class="form-control" id="Content"></textarea>
                     <ValidationMessage For="@(() => postModel.Content)" />
@@ -74,15 +53,32 @@
     {
         try
         {
-            var response = await Http.PostAsJsonAsync("https://localhost:7145/api/posts", postModel);
+            string token = await GetToken();
+
+            if (string.IsNullOrEmpty(token))
+            {
+                errorMessage = "Authorization token not found.";
+                Console.WriteLine(errorMessage);
+                return;
+            }
+
+            // Add the token to the request headers
+            Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await Http.PostAsJsonAsync("https://localhost:7145/api/post", postModel);
 
             if (response.IsSuccessStatusCode)
             {
-                // Post creation successful
-                Console.WriteLine("Post created successfully");
+                var createPostResult = await response.Content.ReadFromJsonAsync<CreatePostResult>();
 
-                // Navigate to the home page or view the newly created post
-                NavigationManager.NavigateTo("/");
+                if (createPostResult != null && createPostResult.Success)
+                {
+                    // Post creation successful
+                    Console.WriteLine("Post created successfully");
+
+                    // Navigate to the home page or view the newly created post
+                    NavigationManager.NavigateTo("/");
+                }
             }
             else
             {
@@ -99,19 +95,35 @@
         }
     }
 
-    // This method is for demonstration purposes; replace it with your actual category retrieval logic
-    private IEnumerable<string> GetCategories()
+    private async Task<string> GetToken()
     {
-        return new List<string> { "Category1", "Category2", "Category3" };
+        // Retrieve the JWT token from local storage
+        return await JSRuntime.InvokeAsync<string>("localStorage.getItem", "token");
     }
 
     private class PostModel
     {
         public string? Title { get; set; }
-        public string? Category { get; set; }
+        public string? Content { get; set; }
+    }
+
+    private class CreatePostResult
+    {
+        public bool Success { get; set; }
+        public string? ErrorCode { get; set; }
+        public Post? CreatedPost { get; set; }
+    }
+
+    public class Post
+    {
+        public Guid Id { get; set; }
+        public string? Title { get; set; }
         public string? ImageUrl { get; set; }
         public string? Content { get; set; }
-        public string? TagsInput { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+        public string? Author { get; set; }
         public List<string>? Tags { get; set; }
+        public int Views { get; set; }
     }
 }
