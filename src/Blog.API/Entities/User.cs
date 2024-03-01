@@ -1,11 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using MongoDB.Bson;
+using System.ComponentModel.DataAnnotations;
 
 namespace Blog.API.Entities;
 
 public class User
 {
     [Key]
-    public Guid Id { get; set; }
+    public ObjectId Id { get; set; }
     [Required]
     [StringLength(50)]
     public required string FirstName { get; set; }

@@ -24,22 +24,24 @@
 <div class="container mt-5">
     <EditForm Model="@postModel" OnValidSubmit="HandleCreatePost">
         <div class="row justify-content-center">
-            <div class="col-md-8">
+            <div class="col-md-8 create-post">
                 <h2 class="text-center mb-4">Create a New Post</h2>
 
                 <div class="form-group">
-                    <label for="Title">Title:</label>
-                    <InputText @bind-Value="postModel.Title" class="form-control" id="Title" />
+                    <InputText @bind-Value="postModel.Title" class="create-post-input" id="Title" placeholder="Title" />
                     <ValidationMessage For="@(() => postModel.Title)" />
                 </div>
 
+                <div>
+                    <InputText @bind-Value="postModel.ImageUrl" class="create-post-input" id="ImageUrl" placeholder="Image URL" />
+                </div>
+
                 <div class="form-group">
-                    <label for="Content">Content:</label>
-                    <textarea @bind="postModel.Content" class="form-control" id="Content"></textarea>
+                    <textarea @bind="postModel.Content" id="Content" placeholder="Content"></textarea>
                     <ValidationMessage For="@(() => postModel.Content)" />
                 </div>
 
-                <button type="submit" class="btn btn-primary float-end">Create Post</button>
+                <button type="submit" class="main-button float-end">Create Post</button>
             </div>
         </div>
     </EditForm>
@@ -104,6 +106,7 @@
     private class PostModel
     {
         public string? Title { get; set; }
+        public string? ImageUrl { get; set; }
         public string? Content { get; set; }
     }
 
@@ -116,7 +119,6 @@
 
     public class Post
     {
-        public Guid Id { get; set; }
         public string? Title { get; set; }
         public string? ImageUrl { get; set; }
         public string? Content { get; set; }

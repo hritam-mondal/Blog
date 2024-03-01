@@ -1,11 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using MongoDB.Bson;
+using System.ComponentModel.DataAnnotations;
 
 namespace Blog.API.Entities;
 
 public class Post
 {
     [Key]
-    public Guid Id { get; set; }
+    public ObjectId Id { get; set; }
     [Required]
     public required string Title { get; set; }
     public string? ImageUrl { get; set; }

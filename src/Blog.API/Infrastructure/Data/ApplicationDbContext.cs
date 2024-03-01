@@ -1,5 +1,7 @@
 ﻿using Blog.API.Entities;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
+using MongoDB.EntityFrameworkCore.Extensions;
 
 namespace Blog.API.Infrastructure.Data;
 
@@ -12,8 +14,16 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<User> Users { get; set; }
     public virtual DbSet<Post> Posts { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    public static ApplicationDbContext Create(IMongoDatabase database) =>
+        new(new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseMongoDB(database.Client, database.DatabaseNamespace.DatabaseName)
+            .Options);
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        optionsBuilder.UseNpgsql("Server=localhost;Port=5432;Database=BlogDB;UserName=postgres;Password=postgres;");
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<User>().ToCollection("users");
+        modelBuilder.Entity<Post>().ToCollection("posts");
     }
+
 }

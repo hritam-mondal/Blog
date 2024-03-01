@@ -3,6 +3,7 @@ using Blog.API.Infrastructure.Data;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
