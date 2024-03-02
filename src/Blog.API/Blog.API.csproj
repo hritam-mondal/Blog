@@ -9,13 +9,9 @@
 
   <ItemGroup>
     <Compile Remove="Features\Post\Delete\**" />
-    <Compile Remove="Features\Post\View\**" />
     <Content Remove="Features\Post\Delete\**" />
-    <Content Remove="Features\Post\View\**" />
     <EmbeddedResource Remove="Features\Post\Delete\**" />
-    <EmbeddedResource Remove="Features\Post\View\**" />
     <None Remove="Features\Post\Delete\**" />
-    <None Remove="Features\Post\View\**" />
   </ItemGroup>
 
   <ItemGroup>

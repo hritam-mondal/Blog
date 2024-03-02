@@ -28,7 +28,7 @@ public sealed class CreatePostHandler : IRequestHandler<CreatePostCommand, Creat
             var validationResult = await _validator.ValidateAsync(request, cancellationToken);
             // Retrieve the authorization token from the request headers
             string? token = _httpContextAccessor.HttpContext!.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-            ObjectId authorId = new();
+            string authorId = string.Empty;
             if (token != null)
             {
                 authorId = GetUserIdFromToken(token)!;
@@ -40,7 +40,7 @@ public sealed class CreatePostHandler : IRequestHandler<CreatePostCommand, Creat
             }
 
             // Check if the author exists
-            var author = await _context.Users.FirstOrDefaultAsync(u => u.Id.Equals(authorId), cancellationToken);
+            var author = await _context.Users.FirstOrDefaultAsync(u => u.Id == authorId, cancellationToken);
             if (author == null)
             {
                 // Handle the case where the author is not found
@@ -50,6 +50,7 @@ public sealed class CreatePostHandler : IRequestHandler<CreatePostCommand, Creat
             // Create a new blog post entity
             var blogPost = new Entities.Post
             {
+                Id = ObjectId.GenerateNewId().ToString(),
                 Title = request.Title!,
                 Content = request.Content!,
                 ImageUrl = request.ImageUrl!,
@@ -88,7 +89,7 @@ public sealed class CreatePostHandler : IRequestHandler<CreatePostCommand, Creat
         }
     }
 
-    private ObjectId GetUserIdFromToken(string token)
+    private string GetUserIdFromToken(string token)
     {
         var handler = new JwtSecurityTokenHandler();
         var jwtToken = handler.ReadToken(token) as JwtSecurityToken;
@@ -96,6 +97,6 @@ public sealed class CreatePostHandler : IRequestHandler<CreatePostCommand, Creat
         // Get the "UserId" claim from the token's claims
         var userIdClaim = jwtToken?.Claims.FirstOrDefault(claim => claim.Type == "UserId");
 
-        return new ObjectId(userIdClaim?.Value);
+        return userIdClaim?.Value;
     }
 }

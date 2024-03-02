@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;
 
 namespace Blog.API.Entities;
@@ -6,7 +7,9 @@ namespace Blog.API.Entities;
 public class User
 {
     [Key]
-    public ObjectId Id { get; set; }
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public required string Id { get; set; }
     [Required]
     [StringLength(50)]
     public required string FirstName { get; set; }

@@ -1,5 +1,8 @@
 ﻿@inject HttpClient Http
 @page "/blogs";
+@using Blog.Client.Models
+@using MongoDB.Bson
+@using System.Text
 
 <div class="heading-page header-text">
     <section class="page-heading">
@@ -17,95 +20,105 @@
 </div>
 
 <section class="blog-posts grid-system">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8">
-                <div class="all-blog-posts">
-                    <div class="row">
-                        @if (blogs != null && blogs.Any())
-                        {
-                            @foreach (var blog in blogs)
+    @if (IsLoading)
+    {
+        <p>Loading...</p>
+    }
+    else
+    {
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="all-blog-posts">
+                        <div class="row">
+                            @if (blogs != null && blogs.Any())
                             {
-                                <div class="col-lg-6">
-                                    <div class="blog-post">
-                                        <div class="blog-thumb">
-                                            <img src="@blog?.imageUrl" alt="">
-                                        </div>
-                                        <div class="down-content">
-                                            <span>Lifestyle</span>
-                                            <a href="post-details.html"><h4>@blog?.Title</h4></a>
-                                            <ul class="post-info">
-                                                <li><a href="#">@blog?.author</a></li>
-                                                <li><a href="#">@blog?.createdAt.ToString("MMMM dd, yyyy")</a></li>
-                                                <li><a href="#">@blog?.views views</a></li>
-                                            </ul>
-                                            <p>@blog.content</p>
-                                            <div class="post-options">
-                                                <div class="row">
-                                                    <div class="col-lg-12">
-                                                        <ul class="post-tags">
-                                                            <li><i class="fa fa-tags"></i></li>
-                                                            <li><a href="#">Best Templates</a>,</li>
-                                                            <li><a href="#">TemplateMo</a></li>
-                                                        </ul>
+                                @foreach (var blog in blogs)
+                                {
+                                    <div class="col-lg-6">
+                                        <div class="blog-post">
+                                            <div class="blog-thumb">
+                                                <img src="@blog?.imageUrl" alt="">
+                                            </div>
+                                            <div class="down-content">
+                                                <NavLink href="@($"/post/{blog?.id}")">
+                                                    <h4>@blog?.title</h4>
+                                                </NavLink>
+                                                <ul class="post-info">
+                                                    <li><a href="#">@blog?.author</a></li>
+                                                    <li><a href="#">@blog?.createdAt.ToString("MMMM dd, yyyy")</a></li>
+                                                    <li><a href="#">@blog?.views views</a></li>
+                                                </ul>
+                                                <p>@blog?.content</p>
+                                                <div class="post-options">
+                                                    <div class="row">
+                                                        <div class="col-lg-12">
+                                                            <ul class="post-tags">
+                                                                <li><i class="fa fa-tags"></i></li>
+                                                                <li><a href="#">Best Templates</a>,</li>
+                                                                <li><a href="#">TemplateMo</a></li>
+                                                            </ul>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                }
                             }
-                        }
-                        else
-                        {
-                            <p>No blogs available.</p>
-                        }
-                        <div class="col-lg-12">
-                            <ul class="page-numbers">
-                                <li><a href="#">1</a></li>
-                                <li class="active"><a href="#">2</a></li>
-                                <li><a href="#">3</a></li>
-                                <li><a href="#"><i class="fa fa-angle-double-right"></i></a></li>
-                            </ul>
+                            else
+                            {
+                                <p>No blogs available.</p>
+                            }
+                            <div class="col-lg-12">
+                                <ul class="page-numbers">
+                                    @foreach (var p in Enumerable.Range(1, totalPages))
+                                    {
+                                        <li class="@((pageNumber == p) ? "active" : "")">
+                                            <button @onclick="() => ChangePage(p)">@p</button>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="sidebar">
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="sidebar-item search">
-                                <form id="search_form" name="gs" method="GET" action="#">
-                                    <input type="text" name="q" class="searchText" placeholder="type to search..." autocomplete="on">
-                                </form>
-                            </div>
-                        </div>
-                        <div class="col-lg-12">
-                            <div class="sidebar-item recent-posts">
-                                <div class="sidebar-heading">
-                                    <h2>Recent Posts</h2>
+                <div class="col-lg-4">
+                    <div class="sidebar">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="sidebar-item search">
+                                    <form id="search_form" name="gs" @onsubmit="HandleSearch">
+                                        <input type="text" name="q" class="searchText" @bind="searchQuery" placeholder="type to search..." autocomplete="on">
+                                    </form>
                                 </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="sidebar-item recent-posts">
+                                    <div class="sidebar-heading">
+                                        <h2>Recent Posts</h2>
+                                    </div>
 
-                                <div class="content">
-                                    <ul>
-                                        @if (recentPosts != null && recentPosts.Any())
-                                        {
-                                            @foreach (var post in recentPosts)
+                                    <div class="content">
+                                        <ul>
+                                            @if (recentPosts != null && recentPosts.Any())
                                             {
-                                                <li>
-                                                    <a href="post-details.html">
-                                                        <h5>@post?.Title</h5>
-                                                        <span>@post?.createdAt.ToString("MMMM dd, yyyy")</span>
-                                                    </a>
-                                                </li>
+                                                @foreach (var post in recentPosts)
+                                                {
+                                                    <li>
+                                                        <a href="post-details.html">
+                                                            <h5>@post?.title</h5>
+                                                            <span>@post?.createdAt.ToString("MMMM dd, yyyy")</span>
+                                                        </a>
+                                                    </li>
+                                                }
                                             }
-                                        }
-                                        else
-                                        {
-                                            <li>No recent posts available.</li>
-                                        }
-                                    </ul>
+                                            else
+                                            {
+                                                <li>No recent posts available.</li>
+                                            }
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -113,39 +126,72 @@
                 </div>
             </div>
         </div>
-    </div>
+    }
 </section>
 
 @code {
     private List<Blog?>? blogs = new List<Blog?>();
     private List<Blog?>? recentPosts = new List<Blog?>();
+    private string? searchQuery;
+    private int totalPages = 1;
+    private int pageNumber = 1;
+    private bool IsLoading = false;
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await Http.GetAsync("https://localhost:7145/api/posts");
+        await LoadBlogs();
+    }
+
+    private async Task LoadBlogs()
+    {
+        IsLoading = true;
+
+        var response = await Http.GetAsync($"https://localhost:7145/api/posts?pageNumber={pageNumber}&pageSize=6");
+
+        if (response.IsSuccessStatusCode)
+        {
+
+            var responseData = await response.Content.ReadFromJsonAsync<ListPostResponse>();
+            if (responseData != null)
+            {
+                blogs = responseData?.Posts!;
+                if (blogs != null && blogs.Any())
+                {
+                    var sortedBlogs = blogs.OrderByDescending(b => b?.createdAt).ToList();
+                    recentPosts = sortedBlogs.Take(3).ToList();
+
+                    // Calculate total pages
+                    totalPages = (int)Math.Ceiling((double)responseData?.TotalCount! / 6); // Assuming 6 items per page
+                }
+            }
+        }
+
+        IsLoading = false;
+    }
+
+    private async Task HandleSearch()
+    {
+        IsLoading = true;
+        pageNumber = 1; // Reset page number when searching
+        var response = await Http.GetAsync($"https://localhost:7145/api/posts?search={searchQuery?.ToLowerInvariant()}");
 
         if (response.IsSuccessStatusCode)
         {
             blogs = await response.Content.ReadFromJsonAsync<List<Blog?>?>();
-            if (blogs != null && blogs.Any())
-            {
-                var sortedBlogs = blogs.OrderByDescending(b => b?.createdAt).ToList();
-                recentPosts = sortedBlogs.Take(3).ToList();
-            }
         }
 
+        IsLoading = false;
     }
 
-    public class Blog
+    private async Task ChangePage(int newPageNumber)
     {
-        public Object? Id { get; set; }
-        public string? Title { get; set; }
-        public string? imageUrl { get; set; }
-        public string? content { get; set; }
-        public DateTime createdAt { get; set; }
-        public DateTime updatedAt { get; set; }
-        public string? author { get; set; }
-        public string? tags { get; set; }
-        public int views { get; set; }
+        pageNumber = newPageNumber;
+        await LoadBlogs();
+    }
+
+    private class ListPostResponse
+    {
+        public List<Blog>? Posts { get; set; }
+        public int? TotalCount { get; set; }
     }
 }

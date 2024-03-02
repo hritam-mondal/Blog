@@ -3,6 +3,7 @@ using Blog.API.Infrastructure.Data;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Security.Cryptography;
 using System.Text;
@@ -50,6 +51,7 @@ public sealed class RegisterHandler : IRequestHandler<RegisterCommand, RegisterR
             // Create a new user entity
             var user = new Entities.User
             {
+                Id = ObjectId.GenerateNewId().ToString(),
                 FirstName = request.FirstName!,
                 LastName = request.LastName!,
                 Email = request.Email!,

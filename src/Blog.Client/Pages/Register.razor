@@ -33,7 +33,7 @@
 
                 <div class="form-group">
                     <ValidationMessage For="@(() => registrationModel.Password)" class="validation-message"></ValidationMessage>
-                    <InputText @bind-Value="registrationModel.Password" class="form-input" placeholder="Password" />
+                    <InputText @bind-Value="registrationModel.Password" type="password" class="form-input" placeholder="Password" />
                 </div>
 
                 <button type="submit" class="button float-end">Register</button>
