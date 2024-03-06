@@ -25,6 +25,15 @@ public sealed class ListPostHandler : IRequestHandler<ListPostQuery, ListPostRes
         // Apply pagination
         query = query.Skip(skip).Take(pageSize);
 
+        // Check if search query is provided
+        if (!string.IsNullOrEmpty(request.SearchQuery))
+        {
+            // Perform search based on title or content
+            query = query.Where(post =>
+                post.Title.Contains(request.SearchQuery) ||
+                post.Content.Contains(request.SearchQuery));
+        }
+
         // Retrieve filtered posts from the database
         var posts = await query.ToListAsync(cancellationToken);
 

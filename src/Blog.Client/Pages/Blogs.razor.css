@@ -8,7 +8,9 @@
 
     .blog-posts .blog-thumb img {
         width: 100%;
+        height: 250px;
         overflow: hidden;
+        object-fit: cover;
     }
 
     .blog-posts .down-content {
@@ -35,10 +37,14 @@
             margin: 10px 0px 12px 0px;
         }
 
-        .blog-posts .down-content ul.post-info li {
-            display: inline-block;
-            margin-right: 8px;
-        }
+            .blog-posts .down-content h4:hover {
+                color: #f48840;
+            }
+
+            .blog-posts .down-content ul.post-info li {
+                display: inline-block;
+                margin-right: 8px;
+            }
 
             .blog-posts .down-content ul.post-info li:after {
                 content: '|';

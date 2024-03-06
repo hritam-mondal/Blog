@@ -1,7 +1,6 @@
 ﻿@inject HttpClient Http
 @page "/blogs";
 @using Blog.Client.Models
-@using MongoDB.Bson
 @using System.Text
 
 <div class="heading-page header-text">
@@ -49,7 +48,7 @@
                                                     <li><a href="#">@blog?.createdAt.ToString("MMMM dd, yyyy")</a></li>
                                                     <li><a href="#">@blog?.views views</a></li>
                                                 </ul>
-                                                <p>@blog?.content</p>
+                                                <p>@string.Join(" ", blog?.content!.Split(' ').Take(15)!)...</p>
                                                 <div class="post-options">
                                                     <div class="row">
                                                         <div class="col-lg-12">
@@ -150,7 +149,6 @@
 
         if (response.IsSuccessStatusCode)
         {
-
             var responseData = await response.Content.ReadFromJsonAsync<ListPostResponse>();
             if (responseData != null)
             {
@@ -173,11 +171,15 @@
     {
         IsLoading = true;
         pageNumber = 1; // Reset page number when searching
-        var response = await Http.GetAsync($"https://localhost:7145/api/posts?search={searchQuery?.ToLowerInvariant()}");
+        var response = await Http.GetAsync($"https://localhost:7145/api/posts?search={searchQuery?.ToLowerInvariant()}&pageNumber={pageNumber}&pageSize=6");
 
         if (response.IsSuccessStatusCode)
         {
-            blogs = await response.Content.ReadFromJsonAsync<List<Blog?>?>();
+            var responseData = await response.Content.ReadFromJsonAsync<ListPostResponse>();
+            if (responseData != null)
+            {
+                blogs = responseData?.Posts!;
+            }
         }
 
         IsLoading = false;
@@ -186,7 +188,20 @@
     private async Task ChangePage(int newPageNumber)
     {
         pageNumber = newPageNumber;
-        await LoadBlogs();
+        IsLoading = true;
+
+        var response = await Http.GetAsync($"https://localhost:7145/api/posts?{(string.IsNullOrEmpty(searchQuery) ? "" : $"search={searchQuery?.ToLowerInvariant()}&")}pageNumber={pageNumber}&pageSize=6");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseData = await response.Content.ReadFromJsonAsync<ListPostResponse>();
+            if (responseData != null)
+            {
+                blogs = responseData?.Posts!;
+            }
+        }
+
+        IsLoading = false;
     }
 
     private class ListPostResponse

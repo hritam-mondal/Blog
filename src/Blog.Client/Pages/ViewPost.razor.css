@@ -51,6 +51,10 @@
             letter-spacing: 0.25px;
         }
 
+            .blog-posts .down-content h4:hover {
+                color: #f48840;
+            }
+
 .grid-system .down-content ul.post-info li {
     margin-right: 3px;
 }

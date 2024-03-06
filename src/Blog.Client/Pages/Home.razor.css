@@ -1,6 +1,4 @@
-﻿/* Call To Action */
-
-.call-to-action {
+﻿.call-to-action {
     margin-top: 100px;
 }
 
@@ -46,7 +44,9 @@
     }
 
     .blog-posts .blog-thumb img {
-        width: 100%;
+        width: -webkit-fill-available;
+        height: 280px;
+        object-fit: cover;
         overflow: hidden;
     }
 
@@ -73,6 +73,10 @@
             color: #20232e;
             margin: 10px 0px 12px 0px;
         }
+
+            .blog-posts .down-content h4:hover {
+                color: #f48840;
+            }
 
         .blog-posts .down-content ul.post-info li {
             display: inline-block;
